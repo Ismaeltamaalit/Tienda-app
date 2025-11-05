@@ -25,7 +25,7 @@ class Sale extends Model
         'sale_date' => 'date',
     ];
 
-    // Relación: una venta pertenece a un producto
+    // Relación: una venta pertenece a un producto.
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
