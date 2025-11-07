@@ -2,38 +2,54 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sale extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'product_id',
+        'order_number',
         'user_id',
-        'quantity',
-        'price',
-        'total',
-        'customer_name',
-        'customer_email',
-        'sale_date',
-        'status'
+        'total_amount',
+        'status',
+        'payment_method',
+        'payment_status',
+        'shipping_address',
+        'notes'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'total' => 'decimal:2',
-        'sale_date' => 'date',
+        'total_amount' => 'decimal:2',
     ];
 
-    // Relación: una venta pertenece a un producto
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    // Relación: una venta pertenece a un usuario
+    // RELACIONES
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    // MÉTODOS ÚTILES
+    public function calculateTotal(): float
+    {
+        return $this->saleItems->sum('subtotal');
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->payment_status === 'paid';
+    }
+
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, ['pending', 'processing']);
     }
 }

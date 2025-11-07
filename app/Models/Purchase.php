@@ -2,36 +2,49 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'product_id',
+        'purchase_number',
+        'supplier_id',
         'user_id',
-        'quantity',
-        'price',
-        'total',
-        'supplier',
-        'purchase_date'
+        'total_amount',
+        'status',
+        'purchase_date',
+        'notes'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'total' => 'decimal:2',
+        'total_amount' => 'decimal:2',
         'purchase_date' => 'date',
     ];
 
-    // Relación: una compra pertenece a un producto
-    public function product(): BelongsTo
+    // RELACIONES
+    public function supplier(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Supplier::class);
     }
 
-    // Relación: una compra pertenece a un usuario
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    // MÉTODOS ÚTILES
+    public function calculateTotal(): float
+    {
+        return $this->purchaseItems->sum('subtotal');
     }
 }
